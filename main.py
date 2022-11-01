@@ -1,5 +1,4 @@
 import asyncio
-from dataclasses import dataclass
 import sys
 import struct
 from bleak import BleakClient
@@ -51,6 +50,7 @@ async def main():
                 batteryVoltage = int(data[20:24], 16) / 1000
                 batteryPercent = int(data[18:20], 16)
                 insert_record(temperature, humidity, batteryVoltage, batteryPercent)
+                stop_event.set()
 
     except KeyboardInterrupt:
             stop_event.set()

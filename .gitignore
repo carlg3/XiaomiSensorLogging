@@ -1,0 +1,5 @@
+nohup.out
+Pipfile
+Pipfile.lock
+plotAni.py
+t_h_readings.db
