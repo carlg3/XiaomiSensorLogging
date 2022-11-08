@@ -5,16 +5,20 @@ from bleak import BleakClient
 from bleak import BleakScanner
 import sqlite3
 
-from datetime import datetime
-from matplotlib import pyplot
-from matplotlib.animation import FuncAnimation
 import datetime
 
-DBNAME = 't_h_readings.db'
+import os.path
+from pathlib import PurePath
 
-dev_name = 'ATC_699848'
-dev_addr = 'A4:C1:38:69:98:48'
-index = '0000181a-0000-1000-8000-00805f9b34fb'
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+MY_PATH = PurePath(SCRIPT_PATH)
+
+DBNAME = MY_PATH/'t_h_readings.db'
+
+dev_name = 'ATC_699848' # change with the name of your device
+dev_addr = 'A4:C1:38:69:98:48' # change with the address of your device
+
+index = '0000181a-0000-1000-8000-00805f9b34fb' # do not change
 
 def insert_record(temp, humi, batt_volt, batt_perc):
     ts = datetime.datetime.now()

@@ -11,7 +11,13 @@ from matplotlib import pyplot
 from matplotlib.animation import FuncAnimation
 import datetime
 
-DBNAME = 't_h_readings.db'
+import os.path
+from pathlib import PurePath
+
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+MY_PATH = PurePath(SCRIPT_PATH)
+
+DBNAME = MY_PATH/'../../t_h_readings.db'
 
 dev_name = 'ATC_699848'
 dev_addr = 'A4:C1:38:69:98:48'
