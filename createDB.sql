@@ -1,5 +1,5 @@
 CREATE TABLE reading (
-	timestamp DATE DEFAULT (datetime('now', 'localtime')) PRIMARY KEY,
+	timestamp DATE PRIMARY KEY,
 	temperature REAL,
 	humidity INT,
 	battery_voltage REAL,

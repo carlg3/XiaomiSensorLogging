@@ -5,6 +5,10 @@ name = "pypi"
 
 [packages]
 bleak = "*"
+matplotlib = "*"
+hvplot = "*"
+jupyterlab = "*"
+panel = "*"
 
 [dev-packages]
 

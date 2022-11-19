@@ -25,16 +25,17 @@ index = '0000181a-0000-1000-8000-00805f9b34fb'
 
 def insert_record(temp, humi, batt_volt, batt_perc):
     ts = datetime.datetime.now()
-    print(f'Inserisco {ts}, {temp}, {humi}, {batt_volt}, {batt_perc}')
-    con  = sqlite3.connect(DBNAME)
-    with con:
-        cur = con.cursor()
-        con.row_factory = sqlite3.Row
+    print(f'{ts}, {temp}, {humi}, {batt_volt}, {batt_perc}')
+   # print(f'Inserisco {ts}, {temp}, {humi}, {batt_volt}, {batt_perc}')
+   # con  = sqlite3.connect(DBNAME)
+   # with con:
+   #     cur = con.cursor()
+   #     con.row_factory = sqlite3.Row
 
-        cur.execute('''INSERT INTO reading (timestamp, temperature, humidity, battery_voltage, battery_percent)
-                VALUES (?, ?, ?, ?, ?);''',
-                (ts, temp, humi, batt_volt, batt_perc))
-        con.commit()
+   #     cur.execute('''INSERT INTO reading (timestamp, temperature, humidity, battery_voltage, battery_percent)
+   #             VALUES (?, ?, ?, ?, ?);''',
+   #             (ts, temp, humi, batt_volt, batt_perc))
+   #     con.commit()
     
 def raw_packet_to_str(pkt):
     """
