@@ -131,7 +131,13 @@ df = get_statistics()
 ## Page elements
 
 tab = go.Figure()
-tab_graph = dcc.Graph(figure=tab, style={'margin': '0', 'padding':'0'})
+tab_graph = dcc.Graph(figure=tab,
+    style={
+        'margin': '0',
+        'padding':'0',
+        'height': '12em'
+    }
+)
 slid = dcc.Slider(0, 100, value=10, marks=None)
 header = html.Div(
     [
@@ -157,7 +163,7 @@ def update_table(rlData):
     except (KeyError, TypeError):
         graph_range = []
 
-    tab =create_stats_table(graph_range)
+    tab = create_stats_table(graph_range)
     return tab
 
 
