@@ -9,6 +9,7 @@ dash-bootstrap-components = "*"
 plotly = "==5.11.0"
 pandas = "*"
 bleak = "*"
+kaleido = "*"
 
 [dev-packages]
 
