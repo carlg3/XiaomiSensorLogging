@@ -60,6 +60,33 @@ def get_statistics(l1=None, l2=None, fields=['temperature', 'humidity']):
     #print(query)
     return df
 
+
+## Create table
+def create_stats_table(graph_range):
+    df = get_statistics(*graph_range)
+
+    tab = go.Figure(
+        data=[
+            go.Table(
+                columnwidth=[80, 80],
+                header=dict(values=['', '<b>Temperature</b>', '<b>Humidity</b>'],
+        #                    fill_color='paleturquoise',
+                            align='center'),
+                cells=dict(values=[['<b>Average</b>', '<b>Maximum</b>', '<b>Mimimum</b>', ],
+                                [df.avg_temperature, df.max_temperature, df.min_temperature],
+                                [df.avg_humidity, df.max_humidity,  df.min_humidity]],
+                                #                   fill_color='lavender',
+                        align='center')
+            )
+        ],
+        layout = dict(
+            paper_bgcolor='rgba(255,0,0,0)',
+            plot_bgcolor='rgba(255,0,0,0)',
+            margin=dict(l=20, r=20, t=20, b=20)
+        )
+    )
+    return tab
+
 #################################
 # Create figure with secondary y-axis
 
@@ -75,13 +102,11 @@ fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 df = get_data(10)
 fig1.add_trace(
         go.Scatter(x=df.timestamp, y=df.wtemperature, name="Temperature", line=dict(color='firebrick')),
-    #go.Scatter(x=[1, 2, 3], y=[40, 50, 60], name="yaxis data"),
     secondary_y=False,
 )
 
 fig1.add_trace(
         go.Scatter(x=df.timestamp, y=df.whumidity, name="Humidity", line=dict(color='royalblue')),
-    #go.Scatter(x=[2, 3, 4], y=[4, 5, 6], name="yaxis2 data"),
     secondary_y=True,
 )
 
@@ -95,7 +120,8 @@ fig1.update_layout(
                 visible=True
             ),
             type="date"
-        )
+        ),
+        margin=dict(l=20, r=20, t=20, b=20)
     )
 mygraph1.figure = fig1
 #################################
@@ -105,12 +131,19 @@ df = get_statistics()
 ## Page elements
 
 tab = go.Figure()
-tab_graph = dcc.Graph(figure=tab)
-
-slid = dcc.Slider(0, 100, value=10)
-app.layout = dbc.Container([tab_graph, mygraph1, slid])
+tab_graph = dcc.Graph(figure=tab, style={'margin': '0', 'padding':'0'})
+slid = dcc.Slider(0, 100, value=10, marks=None)
+header = html.Div(
+    [
+        slid,
+        mygraph1,
+        tab_graph
+    ]
+)
+app.layout = dbc.Container([header])
 ## Misc
-graph_range = None
+
+
 ## Callbacks
 
 @app.callback(
@@ -118,30 +151,13 @@ graph_range = None
         Input(mygraph1, component_property='relayoutData')
 )
 def update_table(rlData):
-    #global graph_range
-    #ffig1 = fig1.full_figure_for_development() 
-    #print(ffig1.layout.xaxis.range)
-    #print(rlData['xaxis.range'][1])
     graph_range = []
     try:
         graph_range = rlData['xaxis.range']
     except (KeyError, TypeError):
         graph_range = []
 
-    df = get_statistics(*graph_range)
-
-    tab = go.Figure(data=[go.Table(
-        columnwidth=[80, 80],
-        header=dict(values=['', '<b>Temperature</b>', '<b>Humidity</b>'],
-                    fill_color='paleturquoise',
-                    align='left'),
-        cells=dict(values=[['<b>Average</b>', '<b>Maximum</b>', '<b>Mimimum</b>', ],
-                        [df.avg_temperature, df.max_temperature, df.min_temperature],
-                        [df.avg_humidity, df.max_humidity,  df.min_humidity]],
-                   fill_color='lavender',
-                   align='left'))
-    ])
-    #tab = create_stats_page(graph_range)
+    tab =create_stats_table(graph_range)
     return tab
 
 
