@@ -32,6 +32,18 @@ def get_data(sm_range):
     df = pd.read_sql_query(query, con, params=[sm_range, sm_range, sm_range, sm_range])
     return df
 
+def get_last_update():
+    con  = sqlite3.connect(DBNAME,
+                          detect_types=sqlite3.PARSE_DECLTYPES |
+                            sqlite3.PARSE_COLNAMES)
+
+    cur = con.cursor()
+
+    query = '''SELECT MAX(timestamp) as max_timestamp FROM reading;'''
+    df = pd.read_sql_query(query, con)
+    return df.max_timestamp[0]
+
+get_last_update()
 def get_statistics(l1=None, l2=None, fields=['temperature', 'humidity']):
     con  = sqlite3.connect(DBNAME,
                           detect_types=sqlite3.PARSE_DECLTYPES |
@@ -80,8 +92,6 @@ def create_stats_table(graph_range):
             )
         ],
         layout = dict(
-            paper_bgcolor='rgba(255,0,0,0)',
-            plot_bgcolor='rgba(255,0,0,0)',
             margin=dict(l=20, r=20, t=20, b=20)
         )
     )
@@ -135,18 +145,45 @@ tab_graph = dcc.Graph(figure=tab,
     style={
         'margin': '0',
         'padding':'0',
-        'height': '12em'
+        'height': '12em',
+        # 'width' : '50%'
     }
 )
-slid = dcc.Slider(0, 100, value=10, marks=None)
+slid = dcc.Slider(0, 100, value=10, marks=None, vertical=True,
+    tooltip={"placement": "right", "always_visible": False})
 header = html.Div(
-    [
-        slid,
-        mygraph1,
-        tab_graph
-    ]
+    dbc.Card(
+        dbc.CardBody([
+            dbc.Row([
+                dbc.Col([
+                    slid
+                ], width=1),
+                dbc.Col([
+                    mygraph1
+                ], width=11)
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    tab_graph
+                ], width=4),
+                dbc.Col([
+                    html.P(get_last_update(), id='last_update_p')
+                ], width=3)
+            ])
+        ]),
+    style={
+        # 'background-color': 'rgba(0,0,122,0.2)',
+    }
+
+    )
 )
-app.layout = dbc.Container([header])
+
+interval = dcc.Interval(
+    interval=30*1000,
+    n_intervals=0
+)
+
+app.layout = dbc.Container([header, interval])
 ## Misc
 
 
@@ -154,9 +191,10 @@ app.layout = dbc.Container([header])
 
 @app.callback(
         Output(tab_graph, component_property='figure'),
-        Input(mygraph1, component_property='relayoutData')
+        [Input(mygraph1, component_property='relayoutData'),
+        Input(interval, component_property='n_intervals')]
 )
-def update_table(rlData):
+def update_table(rlData, n_intervals):
     graph_range = []
     try:
         graph_range = rlData['xaxis.range']
@@ -169,13 +207,21 @@ def update_table(rlData):
 
 @app.callback(
         Output(mygraph1, component_property='figure'),
-        Input(slid, component_property='value')
+        [Input(slid, component_property='value'),
+        Input(interval, component_property='n_intervals')]
 )
-def update_smoothing (val):
+def update_smoothing (val, n_intervals):
     df = get_data(val)
     fig1.update_traces(x=df.timestamp, y=df.whumidity, selector=dict(name="Humidity"))
     fig1.update_traces(x=df.timestamp, y=df.wtemperature, selector=dict(name="Temperature"))
     return fig1
+
+@app.callback(
+        Output('last_update_p', component_property='children'),
+        Input(interval, component_property='n_intervals')
+)
+def update_last_update_p (n_intervals):
+    return get_last_update()
 
 
 
