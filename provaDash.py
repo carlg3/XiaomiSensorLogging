@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import sqlite3
 import pandas as pd
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
 
 ## Database management
 DBNAME = 't_h_readings.db'
@@ -167,7 +167,10 @@ header = html.Div(
                     tab_graph
                 ], width=4),
                 dbc.Col([
-                    html.P(get_last_update(), id='last_update_p')
+                    dbc.CardBody([
+                        html.H3('Last Update'),
+                        html.P(get_last_update(), id='last_update_p')
+                    ])
                 ], width=3)
             ])
         ]),
@@ -179,7 +182,7 @@ header = html.Div(
 )
 
 interval = dcc.Interval(
-    interval=30*1000,
+    interval=60*1000,
     n_intervals=0
 )
 
@@ -220,7 +223,9 @@ def update_smoothing (val, n_intervals):
         Output('last_update_p', component_property='children'),
         Input(interval, component_property='n_intervals')
 )
-def update_last_update_p (n_intervals):
+def periodic_update(n_intervals):
+    #Plotly.relayoutData(mygraph1, {'xaxis.range[1]':None})
+    # mygraph1.layout = go.Layout(xaxis_range=[None, '2022-11-28 18:28:07.434392'])
     return get_last_update()
 
 
