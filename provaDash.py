@@ -5,19 +5,22 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import sqlite3
 import pandas as pd
+from datetime import date
+from datetime import timedelta
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
 
 ## Database management
 DBNAME = 't_h_readings.db'
 
-def get_data(sm_range):
+def get_data(sm_range, date_range=[]):
     con  = sqlite3.connect(DBNAME,
                           detect_types=sqlite3.PARSE_DECLTYPES |
                             sqlite3.PARSE_COLNAMES)
 
     cur = con.cursor()
 
+    params = [sm_range for i in range(4)]
     query = '''SELECT
                     timestamp as "timestamp [timestamp]",
                     temperature,
@@ -28,8 +31,17 @@ def get_data(sm_range):
                     avg(humidity) OVER
                         (ORDER BY timestamp ROWS BETWEEN ? PRECEDING AND ? FOLLOWING)
                         as whumidity
-                FROM reading ORDER BY timestamp;'''
-    df = pd.read_sql_query(query, con, params=[sm_range, sm_range, sm_range, sm_range])
+                    FROM reading'''
+    if len(date_range) == 2:
+        query += '''\nWHERE timestamp BETWEEN ? AND ?'''
+        params.append(date_range[0])
+        params.append(date_range[1])
+    
+    query += '\nORDER BY timestamp;'
+    # print(query)
+    # print(*date_range)
+    print(params)
+    df = pd.read_sql_query(query, con, params=params)
     return df
 
 def get_last_update():
@@ -127,7 +139,7 @@ fig1.update_layout(
         uirevision=True,
         xaxis=dict(
             rangeslider=dict(
-                visible=True
+                visible=False
             ),
             type="date"
         ),
@@ -214,7 +226,17 @@ def update_table(rlData, n_intervals):
         Input(interval, component_property='n_intervals')]
 )
 def update_smoothing (val, n_intervals):
-    df = get_data(val)
+    today = date.today()
+    # Yesterday date
+    yesterday = today - timedelta(days = 1)
+    tomorrow = today + timedelta(days = 1)
+    today = today.strftime('%Y-%m-%d %H:%M:%S.%f')
+    yesterday = yesterday.strftime('%Y-%m-%d %H:%M:%S.%f')
+    tomorrow = tomorrow.strftime('%Y-%m-%d %H:%M:%S.%f')
+    print(today)
+    print(yesterday)
+    print()
+    df = get_data(val, [yesterday, tomorrow])
     fig1.update_traces(x=df.timestamp, y=df.whumidity, selector=dict(name="Humidity"))
     fig1.update_traces(x=df.timestamp, y=df.wtemperature, selector=dict(name="Temperature"))
     return fig1
